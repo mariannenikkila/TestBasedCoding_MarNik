@@ -1,0 +1,30 @@
+*** Settings ***
+Library   String
+Library   OperatingSystem
+Library   Collections
+*** Test cases ***
+Read file into variables
+    ${file}=   Get file   webpages.txt
+    @{iplist}=   Split string   ${file}
+    Set global variable   @{iplist}
+*** Test cases ***
+Ping address
+   ${INDEX}=   Set variable   ${0}
+   ${Plus}=   Set variable   ${1}
+   Remove file   textfile.txt
+   File should not exist   textfile.txt
+   Create file   textfile.txt
+   File should exist   textfile.txt
+   FOR   ${ITEM}   IN   @{iplist}
+       ${ping}=   Run and return rc and output   ping ${iplist}[${INDEX}]
+       @{pList}=   Split string   ${ping}[1]
+       ${IPaddress}=   set variable   ${pList}[2]
+       ${k}=   get index from list   ${pList}   Average
+       ${k}=   evaluate   ${k}+2
+       ${averagems}=   set variable   ${pList}[${k}]
+       ${averagems}=   Remove string    ${averagems}   ms
+       Should be true   ${averagems} < 50
+       Append to file   textfile.txt   ${iplist}[${INDEX}] ${IPaddress} ${averagems} \n
+       ${INDEX}=   Evaluate   ${INDEX} + ${Plus}
+    END
+    
